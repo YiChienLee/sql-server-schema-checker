@@ -20,7 +20,30 @@ You will need the following input files:
 
 > Note: The first row of `Account.csv` is the **standard database**; all others are comparison targets.
 
-### 2. Run CLI Comparison
+### 2. Setup Environment
+
+1. Install Python 3.x
+2. Install required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Edit Excel Configuration Files
+
+* `Account.xlsx`: Input DB connection info (server, database, username, password)
+* `TableList.xlsx`: List of tables to compare
+* `ViewList.xlsx`: List of views to compare
+* `SpList.xlsx`: List of stored procedures to compare
+
+### 4. Switch to Project Directory
+
+```bash
+D:
+cd D:\Yvette\DB_Diff
+```
+
+### 5. Run CLI Comparison
 
 ```bash
 # Compare Stored Procedures
@@ -28,10 +51,16 @@ definitions
 python main.py --mode sp --output sp_diff.json --format json --show-content
 
 # Compare Views (definition and row count)
-python main.py --mode view --output view_diff.csv --format csv
+python main.py --mode view --output view_diff.json --format json --show-content
 
 # Compare Table Schemas
 python main.py --mode schema --output schema_diff.json --format json --show-content
+
+# Sync View Definitions (from standard DB to all targets)
+python main.py --mode sync-view --output sync_log.json --format json
+
+# Sync View Definitions with new view creation enabled
+python main.py --mode sync-view --output sync_log.json --format json --allow-create-new
 ```
 
 ---
@@ -51,6 +80,9 @@ python main.py --mode schema --output schema_diff.json --format json --show-cont
 * Async execution powered by `asyncio` for fast, concurrent analysis
 * Outputs to JSON, CSV, or prints to console
 * Modular Python codebase: easy to maintain, extend, and test
+* Sync view definitions from standard DB to all targets (preserves formatting with `sp_helptext`)
+* Optionally create new views in targets using `--allow-create-new`
+* Show error messages in red with `colorama` for better readability across platforms
 
 ---
 
@@ -62,7 +94,9 @@ db_checker/
 │   ├── sp_checker.py
 │   ├── view_checker.py
 │   ├── schema_checker.py
-│   └── schema_utils.py
+│   ├── schema_utils.py
+│   └── view_sync.py
+
 ├── utils/
 │   ├── db_reader.py
 │   ├── result_writer.py
@@ -74,6 +108,25 @@ db_checker/
 ├── SpList.xlsx
 ├── ViewList.xlsx
 └── TableList.xlsx
+```
+
+---
+
+## Git Suggestions
+
+To avoid committing local Excel or result JSON files to Git, you can run:
+
+```bash
+git update-index --skip-worktree Account.xlsx
+git update-index --skip-worktree TableList.xlsx
+git update-index --skip-worktree ViewList.xlsx
+git update-index --skip-worktree SpList.xlsx
+```
+
+To resume tracking later:
+
+```bash
+git update-index --no-skip-worktree <filename>
 ```
 
 ---
