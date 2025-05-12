@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment folders
+venv/
+.env/
+
+# VSCode or IDE specific
+.vscode/
+.idea/
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# Output and logs (output only, not inputs)
+*.log
+*.json
+view_diff.csv
+
+# Temporary Excel files (but keep original input templates)
+~$*.xlsx
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment control
+.env
