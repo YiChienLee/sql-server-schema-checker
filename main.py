@@ -1,38 +1,57 @@
 import argparse
-from core.sp_checker import main as sp_main
-from core.view_checker import main as view_main
-from core.schema_checker import main as schema_main
-from core.view_sync import main as view_sync_main  # Added: view sync functionality
+from checker.sp_checker import main as sp_main
+from checker.view_checker import main as view_main
+from checker.schema_checker import main as schema_main
+from sync import object_sync
 
-# Main entry point: dispatch to the appropriate comparison/sync module based on mode
-
+# Entry point of the CLI tool for comparison and sync operations
 def main():
-    parser = argparse.ArgumentParser(description="Unified SQL Server Comparison Tool")
+    parser = argparse.ArgumentParser(
+        description="A unified tool for comparing and synchronizing SQL Server objects like views, stored procedures, and schemas.",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
 
-    # Required mode argument: supports sp/view/schema/sync-view
-    parser.add_argument("--mode", required=True, choices=["sp", "view", "schema", "sync-view"], help="Comparison mode")
+    # Operation mode: compare or sync
+    parser.add_argument(
+        "--mode",
+        required=True,
+        choices=["sp", "view", "schema", "sync_sp", "sync_view"],
+        help="Choose the task to perform:\n"
+             "  - sp: Compare stored procedures\n"
+             "  - view: Compare views\n"
+             "  - schema: Compare table schemas\n"
+             "  - sync_sp: Sync only stored procedures (auto-configured)\n"
+             "  - sync_view: Sync only views (auto-configured)"
+    )
 
-    # Optional: output file and format
-    parser.add_argument("--output", required=False, help="Output filename (optional)")
-    parser.add_argument("--format", choices=["json", "csv"], default="json", help="Output format")
+    # Output options
+    parser.add_argument("--output", help="Optional output filename")
+    parser.add_argument("--format", choices=["json", "csv"], default="json", help="Format of the output report")
 
-    # Optional: show detailed content differences (used for comparison modes)
-    parser.add_argument("--show-content", action="store_true", help="Show content differences if applicable")
+    # Comparison-specific option
+    parser.add_argument("--show-content", action="store_true", help="Show detailed content differences if applicable")
 
-    # Optional: allow creation of new views that don't exist in target DBs
-    parser.add_argument("--allow-create-new", action="store_true", help="Allow creating views that do not exist in the target DB")
+    # Sync option
+    parser.add_argument("--allow-create-new", action="store_true", help="Create objects in target DBs if missing")
 
     args = parser.parse_args()
 
-    # Dispatch based on selected mode
+    # Sync mode routing
+    if args.mode == "sync_sp":
+        object_sync.run_mode("sp", args)
+        return
+    elif args.mode == "sync_view":
+        object_sync.run_mode("view", args)
+        return
+
+    # Route execution based on selected mode
     if args.mode == "sp":
-        sp_main(args)  # Compare Stored Procedures
+        sp_main(args)
     elif args.mode == "view":
-        view_main(args)  # Compare Views
+        view_main(args)
     elif args.mode == "schema":
-        schema_main(args)  # Compare Table Schemas
-    elif args.mode == "sync-view":
-        view_sync_main(args)  # Sync view definitions to other DBs using sp_helptext
+        schema_main(args)
+
 
 if __name__ == "__main__":
     main()
